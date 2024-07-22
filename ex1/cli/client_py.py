@@ -13,7 +13,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # Client configuration
 host = "127.0.0.1"
-port = 63353
+port = 23127
 encoding = "utf-8"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,7 +23,7 @@ print("Connected successfully")
 
 def print_progress(current, total, message):
     progress = float(current) / float(total) * 100
-    print(f"\rDownloading File{message}.zip... {progress:.2f}%", end='')
+    print(f"\rDownloading File {message}... {progress:.2f}%", end='')
 
 output_dir = "output"
 os.makedirs(output_dir, exist_ok=True)
@@ -32,8 +32,6 @@ message = client.recv(1024).decode(encoding)
 print(f"{message} \n")
 
 while True:
-    message = None
-    
     with open("input.txt", "r") as file:
         lines = file.readlines()
         
@@ -42,14 +40,13 @@ while True:
         if not data:
             continue
     
-        message = int(data[4])
-        if not os.path.exists(f"{output_dir}/File{message}.zip"):
+        message = data      
+        if not os.path.exists(f"{output_dir}/{message}"):
             client.sendall(str(message).encode(encoding))
             
             response = client.recv(1024).decode(encoding)
-            print("response {response} \n")
-            size = int(response)
-            file_name = f"{output_dir}/File{message}.zip"
+            size = int(response)    
+            file_name = f"{output_dir}/{message}"
             
             with open(file_name, "wb") as file:
                 current = 0
@@ -63,8 +60,7 @@ while True:
                     print_progress(current, size, message)
                 print("\n")
     
-    print(f"Reached end of input.txt. Please waiting 2 seconds to read it again \n")
+    print("Reached end of input.txt. Please wait 2 seconds to read it again\n")
     sleep(2)  # Sleep before starting over
 
-    
-client.close()
+# client.close()
