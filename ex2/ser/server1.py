@@ -26,8 +26,6 @@ def handle_client(client_socket):
                     with open(filename, "rb") as f:
                         while chunk := f.read(chunk_size):
                             client_socket.sendall(chunk)
-                            client_socket.recv(4)
-                            time.sleep(0.00001)
                 except FileNotFoundError:
                     print(f"File {filename} not found")
                     client_socket.sendall(f"Error: File {filename} not found".encode())
@@ -43,9 +41,9 @@ def handle_client(client_socket):
 
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('localhost', 3001))
+    server.bind(('localhost', 23127))
     server.listen(5)
-    print("Server is listening on port 3001")
+    print("Server is listening on port 23127")
 
     try:
         while True:
