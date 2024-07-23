@@ -17,7 +17,7 @@ def download_file(client_socket, filename, priority, progress, total_size):
                     chunk = chunk + chunkmini
                 f.write(chunk)
                 progress[filename] += len(chunk)
-        # print(f"Download successfully: {filename}")
+        print(f"Download successfully: {filename}")
         print("--------------------------------------")
     except Exception as e:
         print(f"Error downloading {filename}: {e}")
@@ -35,7 +35,7 @@ def print_progress(progress, total_size):
             else:
                 print(f"{filename} | Download successfully")
         sys.stdout.flush()
-        # time.sleep(1)
+        time.sleep(0.00001)
     print("Download complete")
 
 def request_files(client_socket, files_list, last_requested_files):
@@ -72,7 +72,7 @@ def request_files(client_socket, files_list, last_requested_files):
         return last_requested_files
 
 def main():
-    server_address = ('localhost', 23127)
+    server_address = ('localhost', 3001)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(server_address)
 

@@ -50,10 +50,11 @@ def handle_client(client_socket, client_id):
         print(f"Client {client_id} socket closed. Active clients: {len(active_clients)}")
 
 def main():
+    port = 3001
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('localhost', 23127))
+    server.bind(('localhost', port))
     server.listen(5)
-    print("Server is listening on port 23127")
+    print(f"Server is listening on {port} ")
 
     client_id_counter = 1
 
