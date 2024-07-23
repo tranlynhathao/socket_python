@@ -4,4 +4,3 @@ File6.zip HIGH
 File3.zip NORMAL
 File4.zip HIGH
 File7.zip CRITICAL
-File8.zip CRITICAL
