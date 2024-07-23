@@ -1,6 +1,7 @@
 File2.zip NORMAL
-File5.zip CRITICAL
-File6.zip CRITICAL
+File5.zip HIGH
+File6.zip HIGH
 File3.zip NORMAL
 File4.zip HIGH
 File7.zip CRITICAL
+File8.zip CRITICAL
