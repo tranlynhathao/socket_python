@@ -1,3 +1,52 @@
+# import os
+# import socket
+
+# # Server configuration
+# host = socket.gethostbyname(socket.gethostname()) #"127.0.0.1" 
+# port = 23127
+# encoding = "utf-8"
+
+# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# server.bind((host, port))
+
+# while True:
+#     server.listen()
+#     print(f"Server running on {host}:{port}")
+#     print("Waiting for client...")
+#     client_socket, client_addr = server.accept()
+#     print(f"Connected to {client_addr}")
+#     try:
+#         with open("Read.txt", "r") as file:
+#             data = file.read()
+#             client_socket.sendall(data.encode(encoding))
+#         while True:
+#             message = client_socket.recv(1024).decode(encoding)
+            
+#             if (message == ''):
+#                 print(f"{client_addr} disconnected")
+#                 break
+#             print(f"Received from client: {message}")
+#             file_name = f"{message}"
+            
+#             size = os.path.getsize(file_name)
+            
+#             client_socket.sendall(str(size).encode(encoding))
+
+#             with open(file_name, "rb") as file:
+#                 while (data := file.read(1024)):
+#                     client_socket.sendall(data)
+
+#             client_socket.sendall(b"<EndOfFile>")
+#             print(f"Send complete for {file_name}")
+#     except Exception as e:
+#         print(f"Error: {e}")
+#     finally:
+#         client_socket.close()
+
+
+
+
+
 import socket
 import threading
 import json
@@ -26,8 +75,6 @@ def handle_client(client_socket):
                     with open(filename, "rb") as f:
                         while chunk := f.read(chunk_size):
                             client_socket.sendall(chunk)
-                            client_socket.recv(4)
-                            time.sleep(0.00001)
                 except FileNotFoundError:
                     print(f"File {filename} not found")
                     client_socket.sendall(f"Error: File {filename} not found".encode())
@@ -43,9 +90,9 @@ def handle_client(client_socket):
 
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('localhost', 3001))
+    server.bind(('localhost', 23127))
     server.listen(5)
-    print("Server is listening on port 3001")
+    print("Server is listening on port 23127")
 
     try:
         while True:
