@@ -1,4 +1,5 @@
-﻿import socket
+﻿import queue
+import socket
 import threading
 import time
 import sys
@@ -6,11 +7,27 @@ import os
 import signal
 
 code = "utf-8"
+checking = queue.Queue()
+
+def getFile(q, checking):
+    while True:
+        if not checking.empty():
+            break
+        with open("input.txt", "r") as f:
+            inFile = f.read()
+            q.put(inFile)
+        if not checking.empty():
+            break
+        print("\nWait 2 seconds to read input again")
+        if not checking.empty():
+            break
+        time.sleep(2)
 
 # Signal handler to exit program
-
 def signal_handler(sig, frame):
-    print('\nExiting program...')
+    checking.put(1)
+    sys.stdout.write("\033c")  # Clear screen
+    print('Exiting program...')
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
@@ -33,9 +50,9 @@ def downloadFiles(client, listFileName, listPri, message):
         data = client.recv(50).decode(code)
         client.sendall(b"ACK")
         file_sizes[file] = int(data)
-        print(file + " ")
-        print(data)
-        print("\n")
+        # print(file + " ")
+        # print(data)
+        # print("\n")
 
     #file_sizes[file] = file_size
 
@@ -56,6 +73,8 @@ def downloadFiles(client, listFileName, listPri, message):
                         listPri.remove(pri)
                         listFileName.remove(name)
                         break
+                    if len(chunk) + downloaded_sizes[name] > file_sizes[name]:
+                        chunk = chunk[:(file_sizes[name] - downloaded_sizes[name])]
                     file.write(chunk)
                     downloaded_sizes[name] += len(chunk)
             elif pri == "HIGH":
@@ -71,6 +90,8 @@ def downloadFiles(client, listFileName, listPri, message):
                         listPri.remove(pri)
                         listFileName.remove(name)
                         break
+                    if len(chunk) + downloaded_sizes[name] > file_sizes[name]:
+                        chunk = chunk[:(file_sizes[name] - downloaded_sizes[name])]
                     file.write(chunk)
                     downloaded_sizes[name] += len(chunk)
             else :
@@ -86,6 +107,8 @@ def downloadFiles(client, listFileName, listPri, message):
                         listPri.remove(pri)
                         listFileName.remove(name)
                         break
+                    if len(chunk) + downloaded_sizes[name] > file_sizes[name]:
+                        chunk = chunk[:(file_sizes[name] - downloaded_sizes[name])]
                     file.write(chunk)
                     downloaded_sizes[name] += len(chunk)
         #printProgress
@@ -93,17 +116,20 @@ def downloadFiles(client, listFileName, listPri, message):
     print("Complete")
 
 def main():
-    server_address = ('localhost', 23127)
+    host = "192.168.0.100"
+    server_address = (host, 23127)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(server_address)
 
     try:
         files_list = client_socket.recv(1024).decode()
         print("Files available for download:\n" + files_list)
+        q = queue.Queue()
+        readFile = threading.Thread(target=getFile, args=(q,checking))
+        readFile.start()
         while True:
-            with open("input.txt", "r") as f:
-                requested_files = f.read()
-            requested_files = requested_files.split("\n") 
+            inFile = q.get()
+            requested_files = inFile.split("\n")
             fileName = []
             priority = []
             message = ""
@@ -115,11 +141,7 @@ def main():
                 priority.append(pri)
                 message = message + name + " " + pri + "\n"
             if fileName != []:
-                downloadThread = threading.Thread(target=downloadFiles, args=(client_socket, fileName, priority, message))
-                downloadThread.start()
-            time.sleep(2)
-            print("\nWait 2 seconds to read input again")
-
+                downloadFiles(client_socket, fileName, priority, message)
         
         
     except KeyboardInterrupt:
