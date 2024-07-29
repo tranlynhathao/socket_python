@@ -3,44 +3,84 @@ import threading
 import json
 import time
 import os
+import queue
+import sys
+
+q = queue.Queue()
+endThread = queue.Queue()
 
 def load_files():
     with open('files.json', 'r') as f:
         return json.load(f)
 
+def waitForNewFile(client):
+    while True:
+        if not endThread.empty():
+            break
+        if q.empty():
+            try:
+                chunk = client.recv(13)
+            except:
+                continue
+            while len(chunk) != 13:
+                chunkmini = client.recv(13 - len(chunk))
+                chunk = chunk + chunkmini
+            if chunk == b"NewFileDetect":
+                q.put(1)
+    return
+
 def handle_client(client_socket, addr):
     try:
         files = load_files()
-
+       
         files_list = "\n".join([f'{file["name"]} {file["size"]}MB' for file in files])
         client_socket.sendall(files_list.encode())
         while True:
-            requested_files = client_socket.recv(1024).decode()
-            if requested_files == "":
-                print(f'{addr} disconnected')
-                break
-            requested_files = requested_files.split("\n") 
             fileName = []
             priority = []
-            for file in requested_files:
-                if file == "":
+            openedFile = []
+            message = client_socket.recv(1024).decode()
+            if message == "":
+                print(f"{addr} disconnected !")
+            message = message.split("\n") 
+            for temp in message:
+                if temp == "":
                     continue
-                name, pri = file.split(" ")
+                name, pri = temp.split(" ")
                 fileName.append(name)
                 priority.append(pri)
                 print(f"Receive from {addr}:", name, pri)
-            listFile = []
             for file in fileName:
-                listFile.append(open(file, "rb"))
-        
-            for file in listFile:
+                openedFile.append(open(file, "rb"))
+            for file in openedFile:
                 file_size = os.fstat(file.fileno()).st_size
                 temp = str(file_size)
                 client_socket.sendall(temp.encode("utf-8"))
                 client_socket.recv(3)
-
-            while listFile != []:
-                for file, pri in zip(listFile, priority):
+        
+            detectFile = threading.Thread(target=waitForNewFile, args=(client_socket,))
+            detectFile.start()
+            while openedFile != []:
+                newFile = ""
+                for file, pri in zip(openedFile, priority):
+                    if not q.empty():
+                        newFile = client_socket.recv(1024).decode('utf-8')
+                        data = b"NewFileIsComing"
+                        while len(data) != 1024:
+                            data = data + b"\0"
+                        client_socket.sendall(data)
+                        openNew = newFile.split("\n")
+                        for filesss in openNew:
+                            if filesss == "":
+                                continue
+                            temp1, temp2 = filesss.split(" ")
+                            priority.append(temp2)
+                            openedFile.append(open(temp1, "rb"))
+                            file_size = str(os.fstat(openedFile[-1].fileno()).st_size)
+                            client_socket.sendall(file_size.encode("utf-8"))
+                            client_socket.recv(3)
+                            print(f"Add new file success {addr}: " + temp1,temp2)
+                        q.get()
                     if pri == "CRITICAL":
                         i = 11
                         while i := i - 1:
@@ -51,7 +91,7 @@ def handle_client(client_socket, addr):
                                     continue
                                 client_socket.sendall(chunk)
                                 file.close()
-                                listFile.remove(file)
+                                openedFile.remove(file)
                                 priority.remove(pri)
                                 break
                             while len(chunk) != 1024:
@@ -67,7 +107,7 @@ def handle_client(client_socket, addr):
                                     continue
                                 client_socket.sendall(chunk)
                                 file.close()
-                                listFile.remove(file)
+                                openedFile.remove(file)
                                 priority.remove(pri)
                                 break
                             while len(chunk) != 1024:
@@ -83,17 +123,18 @@ def handle_client(client_socket, addr):
                                     continue
                                 client_socket.sendall(chunk)
                                 file.close()
-                                listFile.remove(file)
+                                openedFile.remove(file)
                                 priority.remove(pri)
                                 break
                             while len(chunk) != 1024:
                                 chunk += b"\0"
                             client_socket.sendall(chunk)
                 #printProgress
-            print(f"Send complete for {addr}")            
-        
-    except socket.error as e:
-        print(f"Client disconnected abruptly: {e}")
+            print(f"Send complete for {addr}")
+            endThread.put(1)
+            detectFile.join()
+    #except socket.error as e:
+        #print(f"Client disconnected abruptly: {e}")
     except Exception as e:
         print(f"Error: {e}")
     finally:
@@ -104,7 +145,7 @@ def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((host, 23127))
     server.listen(5)
-    print(f"Server is listening on {host} port 23127")
+    print(f"Server is listening on {host} 23127")
 
     try:
         while True:
