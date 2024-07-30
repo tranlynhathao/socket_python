@@ -3,7 +3,7 @@ import socket
 
 # Server configuration
 host = socket.gethostbyname(socket.gethostname()) #"127.0.0.1" 
-port = 23127
+port = 23126
 encoding = "utf-8"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
