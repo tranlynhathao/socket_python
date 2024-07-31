@@ -33,8 +33,10 @@ def downloadFiles(client, fileNamee, filepri, message):
         file_sizes[file] = int(data)
     
     downloaded_sizes = {file: 0 for file in fileNamee}
-    
-    progress_bars = {file: tqdm(total=file_sizes[file], unit='B', unit_scale=True, desc=file, ascii=True) for file in fileNamee}
+    progress_bars = {}
+
+    for file, size in file_sizes.items():
+        progress_bars[file] = tqdm(total=size, unit='B', unit_scale=True, desc=file)
 
     while fileNamee != []:
         for file, pri, name in zip(openedFile, filepri, fileNamee):
@@ -47,13 +49,13 @@ def downloadFiles(client, fileNamee, filepri, message):
                         chunk += chunkmini
                     if chunk[:15] == b"NewFileIsComing":
                         for newName in fileName:
-                            if not os.path.exists(newName):
+                            if not os.path.exists(f"{output_dir}/{newName}") and newName not in progress_bars:
                                 openedFile.append(open(f"{output_dir}/{newName}", 'wb'))
                                 downloaded_sizes[newName] = 0
-                                sizeNew = client.recv(1024).decode(code)
-                                file_sizes[newName] = int(sizeNew)
+                                sizeNew = client.recv(1024)
+                                file_sizes[newName] = int(sizeNew.decode(code))
+                                progress_bars[newName] = tqdm(total=file_sizes[newName], unit='B', unit_scale=True, desc=newName)
                                 client.sendall(b"ACK")
-                                progress_bars[newName] = tqdm(total=file_sizes[newName], unit='B', unit_scale=True, desc=newName, ascii=True)
                         chunk = None
                         chunk = client.recv(1024)
                         while len(chunk) != 1024:
@@ -65,6 +67,7 @@ def downloadFiles(client, fileNamee, filepri, message):
                         filepri.remove(pri)
                         fileName.remove(name)
                         progress_bars[name].close()
+                        del progress_bars[name]
                         break
                     file.write(chunk)
                     downloaded_sizes[name] += len(chunk)
@@ -78,13 +81,13 @@ def downloadFiles(client, fileNamee, filepri, message):
                         chunk += chunkmini
                     if chunk[:15] == b"NewFileIsComing":
                         for newName in fileName:
-                            if not os.path.exists(newName):
+                            if not os.path.exists(f"{output_dir}/{newName}") and newName not in progress_bars:
                                 openedFile.append(open(f"{output_dir}/{newName}", 'wb'))
                                 downloaded_sizes[newName] = 0
-                                sizeNew = client.recv(50).decode(code)
+                                sizeNew = client.recv(1024)
+                                file_sizes[newName] = int(sizeNew.decode(code))
+                                progress_bars[newName] = tqdm(total=file_sizes[newName], unit='B', unit_scale=True, desc=newName)
                                 client.sendall(b"ACK")
-                                file_sizes[newName] = int(sizeNew)
-                                progress_bars[newName] = tqdm(total=file_sizes[newName], unit='B', unit_scale=True, desc=newName, ascii=True)
                         chunk = None
                         chunk = client.recv(1024)
                         while len(chunk) != 1024:
@@ -96,6 +99,7 @@ def downloadFiles(client, fileNamee, filepri, message):
                         filepri.remove(pri)
                         fileName.remove(name)
                         progress_bars[name].close()
+                        del progress_bars[name]
                         break
                     file.write(chunk)
                     downloaded_sizes[name] += len(chunk)
@@ -109,13 +113,13 @@ def downloadFiles(client, fileNamee, filepri, message):
                         chunk += chunkmini
                     if chunk[:15] == b"NewFileIsComing":
                         for newName in fileName:
-                            if not os.path.exists(newName):
+                            if not os.path.exists(f"{output_dir}/{newName}") and newName not in progress_bars:
                                 openedFile.append(open(f"{output_dir}/{newName}", 'wb'))
                                 downloaded_sizes[newName] = 0
-                                sizeNew = client.recv(50).decode(code)
+                                sizeNew = client.recv(1024)
+                                file_sizes[newName] = int(sizeNew.decode(code))
+                                progress_bars[newName] = tqdm(total=file_sizes[newName], unit='B', unit_scale=True, desc=newName)
                                 client.sendall(b"ACK")
-                                file_sizes[newName] = int(sizeNew)
-                                progress_bars[newName] = tqdm(total=file_sizes[newName], unit='B', unit_scale=True, desc=newName, ascii=True)
                         chunk = None
                         chunk = client.recv(1024)
                         while len(chunk) != 1024:
@@ -127,16 +131,20 @@ def downloadFiles(client, fileNamee, filepri, message):
                         filepri.remove(pri)
                         fileName.remove(name)
                         progress_bars[name].close()
+                        del progress_bars[name]
                         break
                     file.write(chunk)
                     downloaded_sizes[name] += len(chunk)
                     progress_bars[name].update(len(chunk))
+        
+    for bar in progress_bars.values():
+        bar.close()
     q.get()
-    print("Complete downloading")
+    tqdm.write("Complete downloading")
     client.sendall(b"close__thread")
 
 def main():
-    server_address = ('10.123.0.127', 23127)
+    server_address = ('192.168.88.116', 23127)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(server_address)
 
@@ -176,7 +184,6 @@ def main():
         client_socket.close()
 
 if __name__ == "__main__":
-    # Tạo thư mục output nếu chưa tồn tại
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     main()

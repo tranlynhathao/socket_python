@@ -43,7 +43,7 @@ def handle_client(client_socket, addr):
             message = client_socket.recv(1024).decode()
             if message == "":
                 print(f"{addr} disconnected !")
-            if message[:15] == "NewFileDetect":
+            if message[:13] == "NewFileDetect":
                 continue
             fileName = []
             priority = []

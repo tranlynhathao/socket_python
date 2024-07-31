@@ -12,7 +12,7 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # Client configuration
-host = "192.168.0.101"
+host = "192.168.88.116"
 port = 23127
 encoding = "utf-8"
 

@@ -135,7 +135,7 @@ def downloadFiles(client, fileNamee, filepri, message):
     client.sendall(b"close__thread")
 
 def main():
-    server_address = ('127.0.0.1', 23127)
+    server_address = ('192.168.88.116', 23127)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(server_address)
 
@@ -150,6 +150,8 @@ def main():
             key = 0
             message = ""
             for file in requested_files:
+                if file == "":
+                    break;
                 name, pri = file.split(" ")
                 if os.path.exists(f"{output_dir}/{name}"):
                     continue

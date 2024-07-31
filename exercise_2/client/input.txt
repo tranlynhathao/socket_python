@@ -1,7 +1,4 @@
 File7.zip CRITICAL
 File8.zip CRITICAL
-File4.zip HIGH
-File5.zip CRITICAL
-book.pdf NORMAL
 File6.zip HIGH
-File3.zip NORMAL
+File5.zip HIGH
