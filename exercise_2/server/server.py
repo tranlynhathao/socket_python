@@ -78,7 +78,7 @@ def handle_client(client_socket, addr):
                         openNew = newFile.split("\n")
                         for filesss in openNew:
                             if filesss == "":
-                                continue
+                                break
                             temp1, temp2 = filesss.split(" ")
                             priority.append(temp2)
                             openedFile.append(open(temp1, "rb"))
