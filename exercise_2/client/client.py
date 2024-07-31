@@ -44,98 +44,44 @@ def downloadFiles(client, fileNamee, filepri, message):
         for file, pri, name in zip(openedFile, filepri, fileNamee):
             if pri == "CRITICAL":
                 i = 11
-                while i := i - 1:
-                    chunk = client.recv(1024)
-                    while len(chunk) != 1024:
-                        chunkmini = client.recv(1024 - len(chunk))
-                        chunk += chunkmini
-                    if chunk[:15] == b"NewFileIsComing":
-                        for newName in fileName:
-                            print(newName)
-                                
-                            if not os.path.exists(f"{output_dir}/{newName}"):
-                                openedFile.append(open(f"{output_dir}/{newName}", 'wb'))
-                                downloaded_sizes[newName] = 0
-                                sizeNew = client.recv(1024)
-                                file_sizes[newName] = int(sizeNew.decode(code))
-                                client.sendall(b"ACK")
-                        chunk = None
-                        chunk = client.recv(1024)
-                        while len(chunk) != 1024:
-                            chunkmini = client.recv(1024 - len(chunk))
-                            chunk += chunkmini
-                    if chunk[0:16] == b"end_of_this_file":
-                        file.close()
-                        openedFile.remove(file)
-                        filepri.remove(pri)
-                        fileName.remove(name)
-                        break
-                    file.write(chunk)
-                    downloaded_sizes[name] += len(chunk)
             elif pri == "HIGH":
                 i = 5
-                while i := i - 1:
-                    chunk = client.recv(1024)
-                    while len(chunk) != 1024:
-                        chunkmini = client.recv(1024 - len(chunk))
-                        chunk += chunkmini
-                    if chunk[:15] == b"NewFileIsComing":
-                        for newName in fileName:
-                            if not os.path.exists(f"{output_dir}/{newName}"):
-                                openedFile.append(open(f"{output_dir}/{newName}", 'wb'))
-                                downloaded_sizes[newName] = 0
-                                sizeNew = client.recv(1024)
-                                file_sizes[newName] = int(sizeNew.decode(code))
-                                client.sendall(b"ACK")
-                        chunk = None
-                        chunk = client.recv(1024)
-                        while len(chunk) != 1024:
-                            chunkmini = client.recv(1024 - len(chunk))
-                            chunk += chunkmini
-                    if chunk[0:16] == b"end_of_this_file":
-                        file.close()
-                        openedFile.remove(file)
-                        filepri.remove(pri)
-                        fileName.remove(name)
-                        break
-                    file.write(chunk)
-                    downloaded_sizes[name] += len(chunk)
             else :
                 i = 2
-                while i := i - 1:
+            while i := i - 1:
+                chunk = client.recv(1024)
+                while len(chunk) != 1024:
+                    chunkmini = client.recv(1024 - len(chunk))
+                    chunk += chunkmini
+                if chunk[:15] == b"NewFileIsComing":
+                    for newName in fileName:
+                        if not os.path.exists(f"{output_dir}/{newName}"):
+                            openedFile.append(open(f"{output_dir}/{newName}", 'wb'))
+                            downloaded_sizes[newName] = 0
+                            sizeNew = client.recv(1024)
+                            file_sizes[newName] = int(sizeNew.decode(code))
+                            client.sendall(b"ACK")
+                    chunk = None
                     chunk = client.recv(1024)
                     while len(chunk) != 1024:
                         chunkmini = client.recv(1024 - len(chunk))
                         chunk += chunkmini
-                    if chunk[:15] == b"NewFileIsComing":
-                        for newName in fileName:
-                            if not os.path.exists(f"{output_dir}/{newName}"):
-                                openedFile.append(open(f"{output_dir}/{newName}", 'wb'))
-                                downloaded_sizes[newName] = 0
-                                sizeNew = client.recv(1024)
-                                file_sizes[newName] = int(sizeNew.decode(code))
-                                client.sendall(b"ACK")
-                        chunk = None
-                        chunk = client.recv(1024)
-                        while len(chunk) != 1024:
-                            chunkmini = client.recv(1024 - len(chunk))
-                            chunk += chunkmini
-                    if chunk[0:16] == b"end_of_this_file":
-                        file.close()
-                        openedFile.remove(file)
-                        filepri.remove(pri)
-                        fileName.remove(name)
-                        break
-                    file.write(chunk)
-                    downloaded_sizes[name] += len(chunk)
+                if chunk[0:16] == b"end_of_this_file":
+                    file.close()
+                    openedFile.remove(file)
+                    filepri.remove(pri)
+                    fileName.remove(name)
+                    break
+                file.write(chunk)
+                downloaded_sizes[name] += len(chunk)
         
-        print_progress_all(downloaded_sizes, file_sizes)
+            print_progress_all(downloaded_sizes, file_sizes)
     q.get()
     print("Complete downloading")
     client.sendall(b"close__thread")
 
 def main():
-    server_address = ('192.168.88.116', 23127)
+    server_address = ('192.168.1.17', 23127)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(server_address)
 

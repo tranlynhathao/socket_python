@@ -51,7 +51,7 @@ def handle_client(client_socket, addr):
             message = message.split("\n") 
             for temp in message:
                 if temp == "":
-                    continue
+                    break
                 name, pri = temp.split(" ")
                 fileName.append(name)
                 priority.append(pri)
@@ -89,52 +89,24 @@ def handle_client(client_socket, addr):
                         foooo = q.get()
                     if pri == "CRITICAL":
                         i = 11
-                        while i := i - 1:
-                            chunk = file.read(1024)
-                            if chunk == b"":
-                                chunk = b"end_of_this_file"
-                                while len(chunk := chunk + b"\0") != 1024:
-                                    continue
-                                client_socket.sendall(chunk)
-                                file.close()
-                                openedFile.remove(file)
-                                priority.remove(pri)
-                                break
-                            while len(chunk) != 1024:
-                                chunk += b"\0"
-                            client_socket.sendall(chunk)
                     elif pri == "HIGH":
                         i = 5
-                        while i := i - 1:
-                            chunk = file.read(1024)
-                            if chunk == b"":
-                                chunk = b"end_of_this_file"
-                                while len(chunk := chunk + b"\0") != 1024:
-                                    continue
-                                client_socket.sendall(chunk)
-                                file.close()
-                                openedFile.remove(file)
-                                priority.remove(pri)
-                                break
-                            while len(chunk) != 1024:
-                                chunk += b"\0"
-                            client_socket.sendall(chunk)
                     else:
                         i = 2
-                        while i := i - 1:
-                            chunk = file.read(1024)
-                            if chunk == b"":
-                                chunk = b"end_of_this_file"
-                                while len(chunk := chunk + b"\0") != 1024:
-                                    continue
-                                client_socket.sendall(chunk)
-                                file.close()
-                                openedFile.remove(file)
-                                priority.remove(pri)
-                                break
-                            while len(chunk) != 1024:
-                                chunk += b"\0"
+                    while i := i - 1:
+                        chunk = file.read(1024)
+                        if chunk == b"":
+                            chunk = b"end_of_this_file"
+                            while len(chunk := chunk + b"\0") != 1024:
+                                continue
                             client_socket.sendall(chunk)
+                            file.close()
+                            openedFile.remove(file)
+                            priority.remove(pri)
+                            break
+                        while len(chunk) != 1024:
+                            chunk += b"\0"
+                        client_socket.sendall(chunk)
                 #printProgress
             print(f"Send complete for {addr}")
             endThread.put(1)
