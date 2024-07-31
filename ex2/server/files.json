@@ -6,6 +6,5 @@
     {"name": "File5.zip", "size": 100},
     {"name": "File6.zip", "size": 200},
     {"name": "File7.zip", "size": 512},
-    {"name": "File8.zip", "size": 1024},
-    {"name": "Ubuntu.png.zip", "size": 0.2}
+    {"name": "File8.zip", "size": 1024}
 ]
