@@ -1,9 +1,9 @@
-import socket
+﻿import socket
 import signal
 import sys
 import os
 from time import sleep
-from tqdm import tqdm
+import colorama
 
 # Signal handler to exit program
 def signal_handler(sig, frame):
@@ -13,16 +13,9 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # Client configuration
-<<<<<<< HEAD:ex1/cli/client.py
-host = "10.123.0.127"
-port = 23126
-||||||| 527c067:ex1/cli/client.py
+
 host = "192.168.0.101"
-port = 23127
-=======
-host = "192.168.88.116"
-port = 23127
->>>>>>> master:exercise_1/client/client.py
+port = 23126
 encoding = "utf-8"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -35,6 +28,18 @@ os.makedirs(output_dir, exist_ok=True)
 
 message = client.recv(1024).decode(encoding)
 print(f"{message} \n")
+
+def print_process(current, total, fileName):
+    percent = float(current) / total * 100
+    bar_length = 50  # Length of the progress bar
+    filled_length = int(bar_length * percent // 100)
+    bar = '█' * filled_length + '-' * (bar_length - filled_length)
+    color = colorama.Fore.LIGHTYELLOW_EX
+    print(color + f"\rDownloading {fileName} |{bar}| {percent:.2f}%", end='', flush=True)
+    if filled_length == 50:
+        color = colorama.Fore.LIGHTGREEN_EX
+    print(color + f"\rDownloading {fileName} |{bar}| {percent:.2f}%", end='', flush=True)
+    #print(colorama.Fore.RESET)
 
 while True:
     with open("input.txt", "r") as file:
@@ -52,23 +57,24 @@ while True:
             response = client.recv(1024).decode(encoding)
             size = int(response)    
             file_name = f"{output_dir}/{message}"
-            
             with open(file_name, "wb") as file:
                 current = 0
-                with tqdm(total=size, unit='B', unit_scale=True, desc=f"Downloading {message}") as pbar:
-                    while True:
-                        chunk = client.recv(1024)
-                        if chunk == b"<EndOfFile>":
-                            break
-                        while len(chunk) != 1024:
-                            data = client.recv(1024 - len(chunk))
-                            chunk = chunk + data
+                while True:
+                    chunk = client.recv(1024)
+                    while len(chunk) != 1024:
+                        data = client.recv(1024 - len(chunk))
+                        chunk = chunk + data
+                    if chunk[:11] == b"<EndOfFile>":
+                        break
+                    if current + 1024 > size:
+                        file.write(chunk[0:(size - current)])
+                    else:    
                         file.write(chunk)
-                        current += len(chunk)
-                        pbar.update(len(chunk))
-                print("\n")
-    print("Reached end of input.txt. Please wait 2 seconds to read it again\n")
-    sleep(2)  # Sleep before starting over
+                    current += len(chunk)
+                    print_process(current, size, message)
+            print("\n")
+            print(colorama.Fore.RESET)
+    
 
 # client.close()
 

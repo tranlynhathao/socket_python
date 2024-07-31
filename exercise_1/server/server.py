@@ -1,4 +1,4 @@
-import os
+﻿import os
 import socket
 
 # Server configuration
@@ -34,9 +34,14 @@ while True:
 
             with open(file_name, "rb") as file:
                 while (data := file.read(1024)):
+                    while len(data) != 1024:
+                        data = data + b'\0'
                     client_socket.sendall(data)
-
-            client_socket.sendall(b"<EndOfFile>")
+                    
+            temp = b"<EndOfFile>"
+            while len(temp := temp + b'\0') != 1024:
+                continue
+            client_socket.sendall(temp)
             print(f"Send complete for {file_name}")
     except Exception as e:
         print(f"Error: {e}")
