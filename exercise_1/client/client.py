@@ -3,6 +3,7 @@ import signal
 import sys
 import os
 from time import sleep
+from tqdm import tqdm
 
 # Signal handler to exit program
 def signal_handler(sig, frame):
@@ -12,18 +13,22 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # Client configuration
+<<<<<<< HEAD:ex1/cli/client.py
+host = "10.123.0.127"
+port = 23126
+||||||| 527c067:ex1/cli/client.py
+host = "192.168.0.101"
+port = 23127
+=======
 host = "192.168.88.116"
 port = 23127
+>>>>>>> master:exercise_1/client/client.py
 encoding = "utf-8"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((host, port))
 
 print("Connected successfully")
-
-def print_progress(current, total, message):
-    progress = float(current) / float(total) * 100
-    print(f"\rDownloading File {message}... {progress:.2f}%", end='')
 
 output_dir = "output"
 os.makedirs(output_dir, exist_ok=True)
@@ -50,18 +55,20 @@ while True:
             
             with open(file_name, "wb") as file:
                 current = 0
-                while True:
-                    chunk = client.recv(1024)
-                    if chunk == b"<EndOfFile>":
-                        break
-                    while len(chunk) != 1024:
-                        data = client.recv(1024 - len(chunk))
-                        chunk = chunk + data
-                    file.write(chunk)
-                    current += len(chunk)
-                    print_progress(current, size, message)
+                with tqdm(total=size, unit='B', unit_scale=True, desc=f"Downloading {message}") as pbar:
+                    while True:
+                        chunk = client.recv(1024)
+                        if chunk == b"<EndOfFile>":
+                            break
+                        while len(chunk) != 1024:
+                            data = client.recv(1024 - len(chunk))
+                            chunk = chunk + data
+                        file.write(chunk)
+                        current += len(chunk)
+                        pbar.update(len(chunk))
                 print("\n")
     print("Reached end of input.txt. Please wait 2 seconds to read it again\n")
     sleep(2)  # Sleep before starting over
 
 # client.close()
+
