@@ -73,9 +73,10 @@ while True:
                         break
                     if current + 1024 > size:
                         file.write(chunk[0:(size - current)])
+                        current = current + (size - current)
                     else:    
                         file.write(chunk)
-                    current += len(chunk)
+                        current += len(chunk)
                     print_process(current, size, message)
             print("\n")
             print(colorama.Fore.RESET)
