@@ -5,8 +5,18 @@ import time
 import sys
 import os
 import signal
+import argparse
 
 code = "utf-8"
+
+# Argument parser configuration
+parser = argparse.ArgumentParser(description="Client to download files from server")
+parser.add_argument('--host', type=str, required=True, help='Server host')
+parser.add_argument('--port', type=int, required=True, help='Server port')
+args = parser.parse_args()
+
+host = args.host
+port = args.port
 
 q = queue.Queue()
 openedFile = []
@@ -81,7 +91,7 @@ def downloadFiles(client, fileNamee, filepri, message):
     client.sendall(b"close__thread")
 
 def main():
-    server_address = ('192.168.88.116', 23127)
+    server_address = (host, port)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_socket.connect(server_address)
 

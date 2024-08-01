@@ -1,9 +1,10 @@
-﻿import socket
+import socket
 import signal
 import sys
 import os
 from time import sleep
 import colorama
+import argparse
 
 # Signal handler to exit program
 def signal_handler(sig, frame):
@@ -12,10 +13,14 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-# Client configuration
+# Argument parser configuration
+parser = argparse.ArgumentParser(description="Client to download files from server")
+parser.add_argument('--host', type=str, required=True, help='Server host')
+parser.add_argument('--port', type=int, required=True, help='Server port')
+args = parser.parse_args()
 
-host = "192.168.0.101"
-port = 23126
+host = args.host
+port = args.port
 encoding = "utf-8"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
