@@ -6,6 +6,7 @@ import sys
 import os
 import signal
 import argparse
+import colorama
 
 code = "utf-8"
 
@@ -35,8 +36,14 @@ def print_progress_all(downloaded_sizes, file_sizes):
     sys.stdout.write("\033c")  # Clear screen
     for file_name in downloaded_sizes:
         progress_percentage = (float(downloaded_sizes[file_name]) / file_sizes[file_name]) * 100
-        print(f"Downloading {file_name} .... {progress_percentage:.2f}%\n")
-    # time.sleep(0.000001)
+        bar_length = 50  # Length of the progress bar
+        filled_length = int(bar_length * progress_percentage // 100)
+        bar = '█' * filled_length + '-' * (bar_length - filled_length)
+        color = colorama.Fore.LIGHTYELLOW_EX
+        if filled_length == 50:
+            color = colorama.Fore.LIGHTGREEN_EX
+        print(color + f"Downloading {file_name} |{bar}| {progress_percentage:.2f}%\n")
+    #time.sleep(0.0001)
 
 def downloadFiles(client, fileNamee, filepri, message):
     client.sendall(message.encode(code))
@@ -44,7 +51,7 @@ def downloadFiles(client, fileNamee, filepri, message):
         openedFile.append(open(f"{output_dir}/{file}", "wb"))
     
     for file in fileNamee:
-        data = client.recv(50).decode(code)
+        data = client.recv(16).decode(code)
         client.sendall(b"ACK")
         file_sizes[file] = int(data)
     
@@ -68,7 +75,7 @@ def downloadFiles(client, fileNamee, filepri, message):
                         if not os.path.exists(f"{output_dir}/{newName}"):
                             openedFile.append(open(f"{output_dir}/{newName}", 'wb'))
                             downloaded_sizes[newName] = 0
-                            sizeNew = client.recv(1024)
+                            sizeNew = client.recv(16)
                             file_sizes[newName] = int(sizeNew.decode(code))
                             client.sendall(b"ACK")
                     chunk = None
@@ -82,11 +89,15 @@ def downloadFiles(client, fileNamee, filepri, message):
                     filepri.remove(pri)
                     fileName.remove(name)
                     break
-                file.write(chunk)
+                if downloaded_sizes[name] + 1024 > file_sizes[name]:
+                    file.write(chunk[:(file_sizes[name] - downloaded_sizes[name])])
+                else:
+                    file.write(chunk)
                 downloaded_sizes[name] += len(chunk)
         
             print_progress_all(downloaded_sizes, file_sizes)
     q.get()
+    print(colorama.Fore.RESET)
     print("Complete downloading")
     client.sendall(b"close__thread")
 
@@ -107,9 +118,9 @@ def main():
             message = ""
             for file in requested_files:
                 if file == "":
-                    break;
+                    break
                 name, pri = file.split(" ")
-                if os.path.exists(f"{output_dir}/{name}"):
+                if os.path.exists(f"{output_dir}/{name}") or name in fileName:
                     continue
                 key = 1
                 fileName.append(name)
