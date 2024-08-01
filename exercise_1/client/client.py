@@ -40,10 +40,10 @@ def print_process(current, total, fileName):
     filled_length = int(bar_length * percent // 100)
     bar = '█' * filled_length + '-' * (bar_length - filled_length)
     color = colorama.Fore.LIGHTYELLOW_EX
-    print(color + f"\rDownloading {fileName} |{bar}| {percent:.2f}%", end='', flush=True)
+    print(color + f"\rDownloading {fileName} |{bar}| {percent:.2f}%", end='\r', flush=True)
     if filled_length == 50:
         color = colorama.Fore.LIGHTGREEN_EX
-    print(color + f"\rDownloading {fileName} |{bar}| {percent:.2f}%", end='', flush=True)
+        print(color + f"\rDownloading {fileName} |{bar}| {percent:.2f}%", end='\r', flush=True)
     #print(colorama.Fore.RESET)
 
 while True:
