@@ -91,9 +91,10 @@ def downloadFiles(client, fileNamee, filepri, message):
                     break
                 if downloaded_sizes[name] + 1024 > file_sizes[name]:
                     file.write(chunk[:(file_sizes[name] - downloaded_sizes[name])])
+                    downloaded_sizes[name] = downloaded_sizes[name] + file_sizes[name] - downloaded_sizes[name]
                 else:
                     file.write(chunk)
-                downloaded_sizes[name] += len(chunk)
+                    downloaded_sizes[name] += len(chunk)
         
             print_progress_all(downloaded_sizes, file_sizes)
     q.get()
